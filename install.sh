@@ -629,7 +629,29 @@ menu() {
     done
 }
 
+show_help() {
+    echo -e "${SKYBLUE}==================================================================${PLAIN}"
+    echo -e "${GREEN}             VPS-Proxy (sing-box) 命令行帮助指南                  ${PLAIN}"
+    echo -e "${SKYBLUE}==================================================================${PLAIN}"
+    echo -e "用法: ${YELLOW}sb [命令]${PLAIN} 或 ${YELLOW}vps-proxy [命令]${PLAIN}\n"
+    echo -e "可用指令:"
+    echo -e "  ${GREEN}(无参数)${PLAIN}       唤出可视化交互多功能管理面板"
+    echo -e "  ${GREEN}h, -h, help${PLAIN}    查看本帮助信息"
+    echo -e "  ${GREEN}status, info${PLAIN}   查看当前节点配置参数、运行状态及分享链接"
+    echo -e "  ${GREEN}qr${PLAIN}             在终端中生成并打印节点的二维码 (手机小火箭扫码)"
+    echo -e "  ${GREEN}port${PLAIN}           快捷修改监听端口 (Hy2 / REALITY / Cloudflare)"
+    echo -e "  ${GREEN}log, logs${PLAIN}      查看 sing-box 实时网络连接日志"
+    echo -e "  ${GREEN}restart${PLAIN}        重启 sing-box 代理服务"
+    echo -e "  ${GREEN}start${PLAIN}          启动 sing-box 代理服务"
+    echo -e "  ${GREEN}stop${PLAIN}           停止 sing-box 代理服务"
+    echo -e "  ${GREEN}cert${PLAIN}           手动重新申请 / 续期 Let's Encrypt SSL 证书"
+    echo -e "  ${GREEN}bbr${PLAIN}            检查并重新激活 Linux 原生 BBR 拥塞控制"
+    echo -e "  ${GREEN}uninstall${PLAIN}      彻底卸载代理服务与相关配置"
+    echo -e "${SKYBLUE}==================================================================${PLAIN}"
+}
+
 case "$1" in
+    h|-h|--help|help) show_help ;;
     status|info) show_info ;;
     qr) show_qr ;;
     port) change_ports ;;
