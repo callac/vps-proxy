@@ -243,7 +243,15 @@ issue_certificates() {
         cp "/etc/letsencrypt/live/${DIRECT_DOMAIN}/privkey.pem" "/etc/letsencrypt/live/${CF_DOMAIN}/privkey.pem"
     fi
 
-    echo -e "${GREEN}✓ SSL 证书准备就绪！${PLAIN}"
+    # 注册自动续期后平滑重启 sing-box 的 Hook
+    mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+    cat << 'HOOKEOF' > /etc/letsencrypt/renewal-hooks/deploy/restart-sing-box.sh
+#!/bin/bash
+systemctl restart sing-box
+HOOKEOF
+    chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-sing-box.sh
+
+    echo -e "${GREEN}✓ SSL 证书准备就绪并已配置静默自动续期！${PLAIN}"
 }
 
 # ----------------- 生成配置与服务 -----------------
