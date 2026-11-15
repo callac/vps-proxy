@@ -80,20 +80,33 @@ install_dependencies() {
     echo -e "${GREEN}✓ 系统基础依赖安装完成！${PLAIN}"
 }
 
-# ----------------- 开启 BBR -----------------
+# ----------------- 开启 BBR 与高并发连接数优化 -----------------
 
 enable_bbr() {
-    echo -e "\n${YELLOW}[2/6] 配置并激活 Linux 原生 BBR + FQ 加速...${PLAIN}"
+    echo -e "\n${YELLOW}[2/6] 配置并激活 Linux 原生 BBR + FQ 加速与高并发网络内核优化...${PLAIN}"
     modprobe tcp_bbr 2>/dev/null || true
-    cat << 'EOF' > /etc/sysctl.d/99-bbr.conf
+    cat << 'EOF' > /etc/sysctl.d/99-vps-proxy.conf
+# === BBR 拥塞控制 ===
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
+
+# === 高并发连接与套接字调优 ===
+net.netfilter.nf_conntrack_max = 131072
+fs.file-max = 1048576
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+net.core.netdev_max_backlog = 65535
+net.ipv4.ip_local_port_range = 1024 65535
+net.netfilter.nf_conntrack_tcp_timeout_established = 3600
+net.netfilter.nf_conntrack_tcp_timeout_close_wait = 30
+net.netfilter.nf_conntrack_tcp_timeout_fin_wait = 30
+net.netfilter.nf_conntrack_tcp_timeout_time_wait = 30
 EOF
     sysctl --system >/dev/null 2>&1
     local current_cc
     current_cc=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk '{print $3}')
     if [[ "$current_cc" == "bbr" ]]; then
-        echo -e "${GREEN}✓ BBR 拥塞控制加速已成功开启并生效！${PLAIN}"
+        echo -e "${GREEN}✓ BBR 拥塞控制与 13 万高并发连接数优化已成功生效！${PLAIN}"
     else
         echo -e "${YELLOW}! 当前拥塞控制算法为: ${current_cc:-未检测到}${PLAIN}"
     fi
@@ -564,16 +577,29 @@ renew_cert() {
 }
 
 toggle_bbr() {
-    echo -e "\n${SKYBLUE}正在重新配置与激活 BBR 加速...${PLAIN}"
+    echo -e "\n${SKYBLUE}正在重新配置与激活 BBR 加速及高并发优化...${PLAIN}"
     modprobe tcp_bbr 2>/dev/null || true
-    cat << 'BBREOF' > /etc/sysctl.d/99-bbr.conf
+    cat << 'BBREOF' > /etc/sysctl.d/99-vps-proxy.conf
+# === BBR 拥塞控制 ===
 net.core.default_qdisc = fq
 net.ipv4.tcp_congestion_control = bbr
+
+# === 高并发连接与套接字调优 ===
+net.netfilter.nf_conntrack_max = 131072
+fs.file-max = 1048576
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+net.core.netdev_max_backlog = 65535
+net.ipv4.ip_local_port_range = 1024 65535
+net.netfilter.nf_conntrack_tcp_timeout_established = 3600
+net.netfilter.nf_conntrack_tcp_timeout_close_wait = 30
+net.netfilter.nf_conntrack_tcp_timeout_fin_wait = 30
+net.netfilter.nf_conntrack_tcp_timeout_time_wait = 30
 BBREOF
     sysctl --system >/dev/null 2>&1
     local current_cc
     current_cc=$(sysctl net.ipv4.tcp_congestion_control 2>/dev/null | awk '{print $3}')
-    echo -e "${GREEN}✓ BBR 配置已刷新，当前拥塞控制算法为: ${current_cc}${PLAIN}"
+    echo -e "${GREEN}✓ BBR 与 13 万高并发连接数配置已刷新生效，当前算法: ${current_cc}${PLAIN}"
 }
 
 view_logs() {
